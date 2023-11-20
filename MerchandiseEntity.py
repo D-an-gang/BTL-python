@@ -1,4 +1,5 @@
 import datetime
+import random
 
 
 class Merchandise:
@@ -7,20 +8,55 @@ class Merchandise:
     price: float
     import_price: float  # giá nhập
     quantity: int
-    mfg: datetime  # ngày sản xuất
-    exp: datetime  # hạn sử dụng
+    mfg: datetime.date  # ngày sản xuất
+    exp: datetime.date  # hạn sử dụng
 
     def __init__(self):
         pass
+        # Getter methods
 
-    def __init__(self, code: int, name: str, price: float, ip: float, quan: int, mfg: datetime, exp: datetime):
-        self.id = code
-        self.name = name
-        self.price = price
-        self.import_price = ip
-        self.quantity = quan
-        self.mfg = mfg
-        self.exp = exp
+    def get_id(self):
+        return self.id
+
+    def get_name(self):
+        return self.name
+
+    def get_price(self):
+        return self.price
+
+    def get_import_price(self):
+        return self.import_price
+
+    def get_quantity(self):
+        return self.quantity
+
+    def get_mfg(self):
+        return self.mfg
+
+    def get_exp(self):
+        return self.exp
+
+    # Setter methods
+    def set_id(self, new_id):
+        self.id = new_id
+
+    def set_name(self, new_name):
+        self.name = new_name
+
+    def set_price(self, new_price):
+        self.price = new_price
+
+    def set_import_price(self, new_import_price):
+        self.import_price = new_import_price
+
+    def set_quantity(self, new_quantity):
+        self.quantity = new_quantity
+
+    def set_mfg(self, new_mfg):
+        self.mfg = new_mfg
+
+    def set_exp(self, new_exp):
+        self.exp = new_exp
 
     def tostring(self):
         print('''id:{} | name: {} | price: {} | import price: {}"
@@ -44,4 +80,9 @@ class ItemInReceipt:
 class Receipt:
     items: list[ItemInReceipt]
     id: int
-    invoice_date: datetime
+    invoice_date: datetime.datetime
+
+    def __init__(self, cart: list[ItemInReceipt]):
+        self.items = cart
+        self.id = random.randint(1, 9999)
+        self.invoice_date = datetime.datetime.today()

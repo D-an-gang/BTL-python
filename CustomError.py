@@ -12,3 +12,9 @@ class OptionInvalidError(Exception):
         options = "|".join(opts)
         self.message = f"Only available options are -->{options}"
         super().__init__(self.message)
+
+
+class InvalidOperation(Exception):
+    def __init__(self, msg: str):
+        self.message = f"Invalid operation -->{msg}"
+        super().__init__(self.message)
