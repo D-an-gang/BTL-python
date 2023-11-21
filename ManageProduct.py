@@ -10,7 +10,8 @@ class ManageProduct:
     stock: list[Merchandise]
 
     def __init__(self):
-        pass
+        self.invoices = []
+        self.stock = []
 
     def add_merchandise(self, item: Merchandise) -> None:
         """
@@ -30,6 +31,7 @@ class ManageProduct:
         :return:object Merchandise
         """
         available_opts = ["id", "name", "both"]
+        search_key.lower()
         res: list[Merchandise] = []
         if str.lower(opt) not in available_opts:
             raise CustomError.OptionInvalidError(available_opts)
@@ -42,7 +44,7 @@ class ManageProduct:
                 res = [x for x in self.stock if search_key in x.name]
             case "both":
                 self.stock.sort(key=lambda x: x.name or x.id)
-                res = [x for x in self.stock if (search_key in x.name) or (search_key in x.id)]
+                res = [x for x in self.stock if (search_key in x.name.lower()) or (search_key in str(x.id))]
         return res
 
     def daily_revenue_per_item(self, item: Merchandise):
@@ -67,17 +69,20 @@ class ManageProduct:
             x.tostring()
         print("-------------------------------------------------")
 
-    def total_daily_revenue(self, month: int, year: int):
+    def total_daily_revenue(self, month: int, year: int) -> dict[Merchandise, float]:
         """
         Tính tổng doanh thu theo ngày
         :param month: số tháng
         :param year: số ngày
         :return: tổng doanh thu cửa hàng theo ngày -- kiểu float
         """
-        res: float = 0
+        res: dict[datetime.date, float] = []
         for invoice in self.invoices:
             if year == invoice.invoice_date.year and month == invoice.invoice_date.month:
-                res += sum(i.total for i in invoice.items)
+                if invoice.invoice_date in res:
+                    res[invoice.invoice_date] += invoice.total()
+                else:
+                    res[invoice.invoice_date] = invoice.total()
         return res
 
     def sort_total_revenue(self, mode: str) -> list[tuple[Merchandise, float]] | None:
@@ -124,6 +129,9 @@ class ManageProduct:
             print("------->SALES: {0}".format(x[1]))
         print("---------------------------------------")
 
+    def close_to_exp(self) -> list[Merchandise]:
+        return [x for x in self.stock if (x.exp - datetime.date.today()).days <= 42]
+
     def price_modify(self) -> None:
         """
         Tổng hợp hàng hóa trong của hàng sắp hết hạn sử dụng, tính giá mới cho mặt hàng đó
@@ -148,8 +156,7 @@ class ManageProduct:
                 if (time - datetime.date.today()).days >= int(CalWeekRes.WEEKS_3):
                     return CalWeekRes.MORE_3_WEEKS
 
-        col: list[Merchandise] = [x for x in self.stock if
-                                  (x.exp - datetime.date.today()).days <= int(CalWeekRes.WEEKS_6)]
+        col: list[Merchandise] = self.close_to_exp()
 
         for item in col:
             match cal_week(item.exp):
@@ -166,7 +173,7 @@ class ManageProduct:
                     continue
         return
 
-    def update_merchandise(self, target_id: Merchandise, item: Merchandise) -> None:
+    def update_merchandise(self, target_id: int, item: Merchandise) -> None:
         """
         Sửa thông tin hàng hóa
         :param target_id: id của item cần sửa
@@ -187,5 +194,15 @@ class ManageProduct:
         self.stock = filtered
 
     def add_invoice(self, cart: list[ItemInReceipt]):
+        for x in cart:
+            buffer = next((item for item in self.stock if item.id == x.item.id), None)
+            if buffer is not None:
+                buffer.quantity -= x.quantity
         res: Receipt = Receipt(cart)
         self.invoices.append(res)
+
+    def get_merchandise(self, id_moc: int):
+        for x in self.stock:
+            if x.id == id_moc:
+                return x
+        return None

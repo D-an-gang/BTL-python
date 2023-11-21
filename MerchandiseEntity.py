@@ -15,6 +15,15 @@ class Merchandise:
         pass
         # Getter methods
 
+    def __init__(self, id_mock, name, price, import_price, quantity, mfg, exp):
+        self.id = id_mock
+        self.name = name
+        self.price = price
+        self.import_price = import_price
+        self.quantity = quantity
+        self.mfg = mfg
+        self.exp = exp
+
     def get_id(self):
         return self.id
 
@@ -86,3 +95,6 @@ class Receipt:
         self.items = cart
         self.id = random.randint(1, 9999)
         self.invoice_date = datetime.datetime.today()
+
+    def total(self) -> float:
+        return sum([x.total for x in self.items], 0)
