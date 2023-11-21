@@ -15,8 +15,9 @@ class Merchandise:
         pass
         # Getter methods
 
-    def __init__(self, id_mock, name, price, import_price, quantity, mfg, exp):
-        self.id = id_mock
+    def __init__(self, name: str, price: float, import_price: float, quantity: int, mfg: datetime.date,
+                 exp: datetime.date):
+        self.id = random.randint(0, 9999)
         self.name = name
         self.price = price
         self.import_price = import_price
