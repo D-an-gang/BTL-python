@@ -69,14 +69,14 @@ class ManageProduct:
             x.tostring()
         print("-------------------------------------------------")
 
-    def total_daily_revenue(self, month: int, year: int) -> dict[Merchandise, float]:
+    def total_daily_revenue(self, month: int, year: int) -> dict[datetime.date, float]:
         """
         Tính tổng doanh thu theo ngày
         :param month: số tháng
         :param year: số ngày
         :return: tổng doanh thu cửa hàng theo ngày -- kiểu float
         """
-        res: dict[datetime.date, float] = []
+        res: dict[datetime.date, float] = {}
         for invoice in self.invoices:
             if year == invoice.invoice_date.year and month == invoice.invoice_date.month:
                 if invoice.invoice_date in res:
