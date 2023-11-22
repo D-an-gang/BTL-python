@@ -11,9 +11,7 @@ class Merchandise:
     mfg: datetime.date  # ngày sản xuất
     exp: datetime.date  # hạn sử dụng
 
-    def __init__(self):
-        pass
-        # Getter methods
+    # Getter methods
 
     def __init__(self, name: str, price: float, import_price: float, quantity: int, mfg: datetime.date,
                  exp: datetime.date):

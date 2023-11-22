@@ -21,7 +21,7 @@ class ManageProduct:
         for x in self.stock:
             if item.id == x.id:
                 raise CustomError.ModificationError(item.id)
-            self.stock.append(item)
+        self.stock.append(item)
 
     def find_merchandise(self, search_key: str, opt: str) -> list[Merchandise]:
         """
@@ -77,13 +77,16 @@ class ManageProduct:
         :return: tổng doanh thu cửa hàng theo ngày -- kiểu float
         """
         res: dict[datetime.date, float] = {}
-        for invoice in self.invoices:
-            if year == invoice.invoice_date.year and month == invoice.invoice_date.month:
-                if invoice.invoice_date in res:
-                    res[invoice.invoice_date] += invoice.total()
-                else:
-                    res[invoice.invoice_date] = invoice.total()
-        return res
+        try:
+            for invoice in self.invoices:
+                if year == invoice.invoice_date.year and month == invoice.invoice_date.month:
+                    if invoice.invoice_date in res:
+                        res[invoice.invoice_date] += invoice.total()
+                    else:
+                        res[invoice.invoice_date] = invoice.total()
+            return res
+        except TypeError:
+            raise TypeError
 
     def sort_total_revenue(self, mode: str) -> list[tuple[Merchandise, float]] | None:
         """
@@ -96,12 +99,15 @@ class ManageProduct:
             raise CustomError.OptionInvalidError(available_opts)
         res: dict[Merchandise, float] = {}
         # output: list[tuple[Merchandise, float]] = []
-        for invoice in self.invoices:
-            for item in invoice.items:
-                if item.item not in res.keys():
-                    res[item.item] = item.total
-                else:
-                    res[item.item] += item.total
+        try:
+            for invoice in self.invoices:
+                for item in invoice.items:
+                    if item.item not in res.keys():
+                        res[item.item] = item.total
+                    else:
+                        res[item.item] += item.total
+        except TypeError:
+            raise TypeError
         if len(res) != 0:
             output = sorted(res.items(), key=lambda kv: (kv[1], kv[0]))
         else:
@@ -117,17 +123,20 @@ class ManageProduct:
         """
         Hiển thị 5 sản phẩm doanh thu cao nhất, 5 mặt hàng có doanh thu thấp nhất
         """
-        col: list[tuple[Merchandise, float]] = self.sort_total_revenue("desc")
-        print("Top sales:")
-        for x in col[:5]:
-            x[0].tostring()
-            print("------->SALES: {0}".format(x[1]))
-        print("---------------------------------------")
-        print("Bottom 5")
-        for x in col[-5:-1]:
-            x[0].tostring()
-            print("------->SALES: {0}".format(x[1]))
-        print("---------------------------------------")
+        try:
+            col: list[tuple[Merchandise, float]] = self.sort_total_revenue("desc")
+            print("Top sales:")
+            for x in col[:5]:
+                x[0].tostring()
+                print("------->SALES: {0}".format(x[1]))
+            print("---------------------------------------")
+            print("Bottom 5")
+            for x in col[-5:-1]:
+                x[0].tostring()
+                print("------->SALES: {0}".format(x[1]))
+            print("---------------------------------------")
+        except TypeError:
+            raise TypeError
 
     def close_to_exp(self) -> list[Merchandise]:
         return [x for x in self.stock if (x.exp - datetime.date.today()).days <= 42]
@@ -181,12 +190,12 @@ class ManageProduct:
         :raise InvalidOperation khi sửa đổi id của item hoặc id của item không tồn tại
         """
         err_msg = ["Merchandise id not found", "U cannot change the merchandise id"]
+        if target_id != item.id:
+            raise CustomError.InvalidOperation(err_msg[1])
+        if target_id not in [x.id for x in self.stock]:
+            raise CustomError.InvalidOperation(err_msg[0])
         for x in self.stock:
-            if x.id != target_id:
-                raise CustomError.InvalidOperation(err_msg[0])
-            else:
-                if target_id != item.id:
-                    raise CustomError.InvalidOperation(err_msg[1])
+            if x.id == target_id:
                 x = item
 
     def remove_merchandise(self, target_id: int):

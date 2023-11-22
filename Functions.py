@@ -1,8 +1,9 @@
 import datetime
 import random
+
 import CustomError
-from MerchandiseEntity import Merchandise, Receipt, ItemInReceipt
 from ManageProduct import ManageProduct
+from MerchandiseEntity import Merchandise, ItemInReceipt
 
 
 def convert_date(date_components: list[str]):
@@ -25,15 +26,15 @@ def input_date() -> datetime.date:
 def option_1(db: ManageProduct):
     try:
         try:
-            item: Merchandise = Merchandise()
+            item: Merchandise = Merchandise("", 0, 0, 0, datetime.date.today(), datetime.date.today())
             item.set_id(random.randint(0, 9999))
             item.set_name(input("Nhập tên sản phẩm: "))
             item.set_import_price(float(input("Nhập giá nhập hàng: ")))
-            item.set_price(float(input("Nhập giá bán sản phẩm")))
-            item.set_quantity(int(input("Nhập số lượng nhập hàng")))
-            print("Nhập ngày sản xuất hàng hóa")
+            item.set_price(float(input("Nhập giá bán sản phẩm: ")))
+            item.set_quantity(int(input("Nhập số lượng nhập hàng: ")))
+            print("Nhập ngày sản xuất hàng hóa: ")
             item.set_mfg(input_date())
-            print("Nhập hạn sử dụng hàng hóa")
+            print("Nhập hạn sử dụng hàng hóa: ")
             item.set_exp(input_date())
             db.add_merchandise(item)
         except ValueError:
@@ -44,9 +45,9 @@ def option_1(db: ManageProduct):
 
 
 def option_2(db: ManageProduct):
-    mode: str = input("Lựa chọn chế độ tìm kiếm id | name | both (cả hai)")
+    mode: str = input("Lựa chọn chế độ tìm kiếm id | name | both (cả hai): ")
     try:
-        key: str = input("Nhập từ khóa tìm kiếm")
+        key: str = input("Nhập từ khóa tìm kiếm: ")
         res: list[Merchandise] = db.find_merchandise(key, mode)
         if len(res) <= 0:
             print("Không tìm thấy mặt hàng yêu cầu")
@@ -103,7 +104,7 @@ def option_3(db: ManageProduct):
 
 
 def option_4(db: ManageProduct):
-    mode = input("Nhập chế độ sắp xếp: ASC - tăng dần | DES - giảm dần")
+    mode = input("Nhập chế độ sắp xếp: asc - tăng dần | desc - giảm dần")
     try:
         res: list[tuple[Merchandise, float]] = db.sort_total_revenue(mode)
         for x in res:
@@ -111,6 +112,9 @@ def option_4(db: ManageProduct):
             print(f"------->SALES: {x[1]}")
     except CustomError.OptionInvalidError as e:
         print(e.message)
+        return
+    except TypeError:
+        print("Không có dữ liệu hóa đơn")
         return
 
 
@@ -124,10 +128,15 @@ def option_5(db: ManageProduct):
     except ValueError:
         print("Dữ liệu nhập vào không đúng định dạng")
         return
+    except TypeError:
+        print("Không có dữ liệu hóa đơn")
 
 
 def option_6(db: ManageProduct):
-    db.display_top_5()
+    try:
+        db.display_top_5()
+    except TypeError:
+        print("Không có dữ liệu hóa đơn")
 
 
 def option_7(db: ManageProduct):
@@ -155,21 +164,33 @@ def option_8(db: ManageProduct):
             choice = input("\n Lựa chọn: (id sản phẩm cần bán) - Không nhập gì và Enter để xong lựa chọn ")
             if len(choice) <= 0:
                 break
-            target = int()
+            target = int(choice)
             item: Merchandise | None = db.get_merchandise(target)
             if item is None:
                 print("Không tìm thấy sản phẩm!")
                 return
-            quan = int(input("Nhập số lượng cần bán"))
+            quan = int(input("Nhập số lượng cần bán: "))
+            if quan > item.quantity:
+                print("\033[91mĐã vượt quá số lượng tồn kho!!!\033[0m")
+                continue
             cart.append(ItemInReceipt(item, quan))
+            print("---------------Giỏ hàng hiện tại------------")
+            for x in cart:
+                print(f"{x.item.name} -----------> {x.quantity}")
 
-        confirm = input("Xác nhận bán các sản phẩm trong giỏ hàng? (Y/N)  ")
+        confirm = input(
+            "Xác nhận bán các sản phẩm trong giỏ hàng? (Y/N)  " if len(cart) > 0 else "Xác nhận hủy đơn hàng? (Y/N)  ")
         choices = ["y", "n"]
+
         if confirm.lower() not in choices:
             print("lựa chọn không hợp lệ, vui lòng thử lại sau.....")
             return
         if confirm.lower() == "y":
-            db.add_invoice(cart)
+            if len(cart) > 0:
+                db.add_invoice(cart)
+            else:
+                print("Không có đồ nào trong giỏ hàng...")
+                return
     except ValueError:
         print("dự liệu nhập không hợp lệ, vui lòng thử lại sau")
     return
