@@ -97,3 +97,9 @@ class Receipt:
 
     def total(self) -> float:
         return sum([x.total for x in self.items], 0)
+
+
+def receiptwithdate(cart: list[ItemInReceipt], date: datetime.datetime) -> Receipt:
+    x = Receipt(cart)
+    x.invoice_date = date
+    return x
