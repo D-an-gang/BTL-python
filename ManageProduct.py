@@ -160,9 +160,9 @@ class ManageProduct:
             if datetime.date.today() >= time:
                 return CalWeekRes.OUTDATED
             else:
-                if (time - datetime.date.today()).days < int(CalWeekRes.WEEKS_3):
+                if (time - datetime.date.today()).days < CalWeekRes.WEEKS_3.value:
                     return CalWeekRes.LESS_3_WEEKS
-                if (time - datetime.date.today()).days >= int(CalWeekRes.WEEKS_3):
+                if (time - datetime.date.today()).days >= CalWeekRes.WEEKS_3.value:
                     return CalWeekRes.MORE_3_WEEKS
 
         col: list[Merchandise] = self.close_to_exp()
@@ -173,13 +173,13 @@ class ManageProduct:
                     # Xóa sạch số lượng nếu phát hiện quá hạn??? quantity -> 0
                     pass
                 case CalWeekRes.LESS_3_WEEKS:
-                    item.price /= ((100.0 - float(CalWeekRes.DISCOUNT_L3W)) / 100)
-                    pass
+                    item.price /= ((100.0 - CalWeekRes.DISCOUNT_L3W.value) / 100)
                 case CalWeekRes.MORE_3_WEEKS:
-                    item.price *= ((100.0 - float(CalWeekRes.DISCOUNT_M3W)) / 100)
-                    pass
+                    item.price *= ((100.0 - CalWeekRes.DISCOUNT_M3W.value) / 100)
                 case _:
                     continue
+        print("\033[1;32mĐiều chỉnh giá thành công\033[0m")
+        self.display()
         return
 
     def update_merchandise(self, target_id: int, item: Merchandise) -> None:
